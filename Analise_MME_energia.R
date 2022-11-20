@@ -6,6 +6,7 @@ library(dplyr)
 library(bigrquery)
 library(DBI)
 library(scales)
+library(plotly)
 options(scipen=999)
 #------ Coletando os dados da base dos dados
 con = dbConnect(bigquery(),
@@ -42,3 +43,26 @@ estado_ano = df %>%filter(tipo_consumo == "Total", sigla_uf %in% c('RJ', 'SP', '
 ggplot(data = estado_ano, aes(ano, total_ano, col = sigla_uf))+
   geom_line()+
   theme_minimal()
+
+
+# Observações sobre os dados
+df$tipo_consumo %>% unique()
+
+
+# Criando Grafico de Consumo total nos Ultimos ano ------
+tipos_consumo = df %>%filter(tipo_consumo != 'Total') %>% 
+  select(tipo_consumo, consumo) %>% 
+  group_by(tipo_consumo) %>% 
+  summarise(total_consumo = sum(consumo))
+
+# Plotando grafico de pizza interativo
+
+plot2 = plot_ly(tipos_consumo, labels = ~tipo_consumo, values = ~total_consumo, type = 'pie')
+
+plot2 = plot2 %>% layout(title = 'Tipos de Consumo de Energia em Mwh entre 2004 e 2021 no Brasil')
+
+plot2
+
+
+
+
